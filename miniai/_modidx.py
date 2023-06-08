@@ -6,6 +6,4 @@ d = { 'settings': { 'branch': 'master',
                 'git_url': 'https://github.com/arun477/miniai',
                 'lib_path': 'miniai'},
   'syms': { 'miniai.core': {'miniai.core.foo': ('core.html#foo', 'miniai/core.py')},
-            'miniai.lec_10_v4': {},
-            'miniai.lec_9_v4': {},
-            'miniai.lec_9_v5': {}}}
+            'miniai.datasets': {'miniai.datasets.boo': ('datasets.html#boo', 'miniai/datasets.py')}}}

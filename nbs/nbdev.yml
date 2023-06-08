@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "https://github.com/arun477/miniai.git"
+  site-url: "https://arun477.github.io/https://github.com/arun477/miniai.git"
+  description: "practice code"
+  repo-branch: main
+  repo-url: "https://github.com/arun477/https://github.com/arun477/miniai.git"

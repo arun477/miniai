@@ -3,5 +3,8 @@
 # %% auto 0
 __all__ = ['boo']
 
+# %% ../nbs/datasets.ipynb 1
+import torch
+
 # %% ../nbs/datasets.ipynb 2
 def boo(): pass

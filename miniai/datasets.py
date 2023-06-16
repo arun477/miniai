@@ -6,8 +6,96 @@ import math,numpy as np,matplotlib.pyplot as plt
 from operator import itemgetter
 from itertools import zip_longest
 import fastcore.all as fc
-from torch.utils.data import default_collate
-
+from torch.utils.data import default_collate,DataLoader
+from .training import *
+import torchvision.transforms.functional as TF
 
 # %% auto 0
-__all__ = []
+__all__ = ['inplace', 'collated_dict', 'show_image', 'subplots', 'get_grid', 'show_images', 'DataLoaders']
+
+# %% ../nbs/05_datasets.ipynb 5
+def inplace(f):
+    def _f(b):
+        f(b)
+        return b
+    return _f
+
+# %% ../nbs/05_datasets.ipynb 10
+def collated_dict(ds):
+    get = itemgetter(*ds.features)
+    def _f(b):
+        return get(default_collate(b))
+    return _f
+
+# %% ../nbs/05_datasets.ipynb 13
+@fc.delegates(plt.Axes.imshow)
+def show_image(im, ax=None, title=None, figsize=None, noframe=True, **kwargs):
+    if fc.hasattrs(im, ('cpu', 'permute', 'detach')):
+        im = im.detach().cpu()
+        if len(im.shape)==3 and im.shape[0] < 5:
+            im = im.permute(1,2,0)
+    elif not isinstance(im, np.ndarray):
+        im = np.array(im)
+    if im.shape[-1] == 1:
+        im = im[..., 0]
+    if ax is None:
+        _,ax = plt.subplots(figsize=figsize)
+    ax.imshow(im, **kwargs)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    if noframe:
+        ax.axis('off')
+    if title is not None:
+        ax.set_title(title)
+    return ax
+
+# %% ../nbs/05_datasets.ipynb 17
+@fc.delegates(plt.subplots, keep=True)
+def subplots( nrows:int=1, # Number of rows in returned axes grid
+    ncols:int=1, # Number of columns in returned axes grid
+    figsize:tuple=None, # Width, height in inches of the returned figure
+    imsize:int=3, # Size (in inches) of images that will be displayed in the returned figure
+    suptitle:str=None, # Title to be set to returned figure cool
+    **kwargs):
+    if figsize is None:
+        figsize = (nrows*imsize, ncols*imsize)
+    fig,ax = plt.subplots(nrows, ncols, figsize=figsize, **kwargs)
+    if suptitle is not None:
+        fig.suptitle(suptitle)
+    if nrows*ncols == 1:
+        ax = np.array([ax])
+    return fig, ax
+
+# %% ../nbs/05_datasets.ipynb 22
+@fc.delegates(subplots)
+def get_grid(n, nrows=None, ncols=None, title=None, weight=None, size=14, **kwargs):
+    if nrows:
+        ncols = ncols or int(np.floor(n/nrows))
+    elif ncols:
+        nrows = nrows or int(np.ceil(n/ncols))
+    else:
+        nrows = int(math.sqrt(n))
+        ncols = int(np.floor(n/nrows))
+    fig,axs = subplots(nrows,ncols,**kwargs)
+    for i in range(len(axs.flat)):
+        axs.flat[i].set_axis_off()
+    if title is not None:
+        fig.suptitle(title, weight=weight, size=size)
+    return fig,axs
+
+# %% ../nbs/05_datasets.ipynb 24
+@fc.delegates(subplots)
+def show_images(imgs, nrows=None, ncols=None, titles=None, **kwargs):
+    axs = get_grid(len(imgs), nrows=nrows, ncols=ncols, **kwargs)[1]
+    for img,t,ax in zip_longest(imgs, titles or [], axs.flat):
+        show_image(img.view(28, 28), ax=ax, title=t)
+
+# %% ../nbs/05_datasets.ipynb 27
+class DataLoaders:
+    def __init__(self, *dls):
+        self.train,self.valid = dls[:2]
+    
+    @classmethod
+    def from_dd(cls, dd, batch_size, as_tuple=True, **kwargs):
+        f = collated_dict(dd['train'])
+        return cls(*get_dls(*dd.values(), bs=batch_size, collate_fn=f, **kwargs))

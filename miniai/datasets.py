@@ -11,7 +11,7 @@ from .training import *
 import torchvision.transforms.functional as TF
 
 # %% auto 0
-__all__ = ['inplace', 'collated_dict', 'show_image', 'subplots', 'get_grid', 'show_images', 'DataLoaders']
+__all__ = ['inplace', 'collate_dict', 'show_image', 'subplots', 'get_grid', 'show_images', 'DataLoaders']
 
 # %% ../nbs/05_datasets.ipynb 5
 def inplace(f):
@@ -21,7 +21,7 @@ def inplace(f):
     return _f
 
 # %% ../nbs/05_datasets.ipynb 10
-def collated_dict(ds):
+def collate_dict(ds):
     get = itemgetter(*ds.features)
     def _f(b):
         return get(default_collate(b))
@@ -97,5 +97,5 @@ class DataLoaders:
     
     @classmethod
     def from_dd(cls, dd, batch_size, as_tuple=True, **kwargs):
-        f = collated_dict(dd['train'])
+        f = collate_dict(dd['train'])
         return cls(*get_dls(*dd.values(), bs=batch_size, collate_fn=f, **kwargs))

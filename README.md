@@ -1,2 +1,2 @@
 # Deep Learning Practice Codes
-This is a practice code for the course on deep generative learning from fast.ai.
+Deep Learning Generative Models Practice Code (with mini PyTorch implementation). This is a reimplementation of a coursework from fastai.
